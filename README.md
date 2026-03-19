@@ -1,6 +1,6 @@
 # 📚 Test Planner Project
 
-A smart and structured **Test Planner Web Application** designed to help students organize, track, and optimize their study schedules efficiently. This project focuses on productivity, clarity, and ease of use, making exam preparation less chaotic and more strategic.
+A smart and structured **Test Planner Web Application** designed to help organizers and professors in creating, and optimizing their study schedules efficiently. This project focuses on productivity, clarity, and ease of use, making exam scheduling less chaotic and more strategic.
 
 ---
 
