@@ -61,7 +61,7 @@ The Test Planner allows users to:
 ## 📂 Project Structure
 
 ```
-test-planner/
+project/
 │
 ├── frontend/
 │   ├── components/
@@ -86,8 +86,8 @@ test-planner/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/test-planner.git
-cd test-planner
+git clone https://github.com/MaryamRizwan7/test-planner.git
+cd project
 ```
 
 ### 2. Install Dependencies
@@ -102,23 +102,126 @@ npm install
 npm start
 ```
 
-*(Adjust commands if using Django or another framework)*
+Here’s your **properly formatted README section** — clean, structured, and GitHub-ready 📘✨
 
 ---
 
+## 🔧 Backend Setup (Django)
+
+### 1. Create Virtual Environment
+
+```bash
+python -m venv venv
+venv\Scripts\activate   # Windows
+source venv/bin/activate # Mac/Linux
+```
+
+### 2. Install Dependencies
+
+```bash
+pip install django djangorestframework
+```
+
+### 3. Setup Project & App
+
+```bash
+django-admin startproject backend
+cd backend
+python manage.py startapp planner
+```
+
+Add the following to `settings.py`:
+
+```python
+INSTALLED_APPS = [
+    'rest_framework',
+    'planner',
+]
+```
+
+---
+
+### 4. Create Model
+
+```python
+from django.db import models
+
+class Test(models.Model):
+    name = models.CharField(max_length=100)
+    subject = models.CharField(max_length=100)
+    date = models.DateField()
+```
+
+---
+
+### 5. Run Project
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+python manage.py runserver
+```
+
+---
+
+### 6. (Optional) API Setup
+
+#### `serializers.py`
+
+```python
+from rest_framework import serializers
+from .models import Test
+
+class TestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Test
+        fields = '__all__'
+```
+
+#### `views.py`
+
+```python
+from rest_framework import viewsets
+from .models import Test
+from .serializers import TestSerializer
+
+class TestViewSet(viewsets.ModelViewSet):
+    queryset = Test.objects.all()
+    serializer_class = TestSerializer
+```
+
+#### `urls.py`
+
+```python
+from rest_framework.routers import DefaultRouter
+from planner.views import TestViewSet
+
+router = DefaultRouter()
+router.register(r'tests', TestViewSet)
+```
+
+
 ## 🧪 Usage
 
-1. Create a new test entry
-2. Add subject and topics
-3. Set deadlines
-4. Track progress as you study
-5. Review upcoming tests regularly
+1. Simply generate schedule for exams without manually wasting time.
+2. Preview and make changes in the schedule right before downloading.
+3. Download the complete schedule as an excel file.
+4. Generate venue plan.
+5. Download venue plan as a word document.
 
 ---
 
 ## 📸 Screenshots (Optional)
 
-*Add screenshots here to showcase your UI*
+<img width="1365" height="588" alt="landing page" src="https://github.com/user-attachments/assets/c423a3e3-294a-48d4-a216-c5b4c55a9ab1" />
+<img width="1140" height="592" alt="MastersInst1" src="https://github.com/user-attachments/assets/267dec8c-339d-4861-b546-aa31f60c9dc2" />
+<img width="1090" height="550" alt="MastersInst2" src="https://github.com/user-attachments/assets/ecc13375-0ba8-4058-945c-c988c05673a7" />
+<img width="1296" height="597" alt="Masterform" src="https://github.com/user-attachments/assets/38bc579d-7520-4197-b094-511618f5c842" />
+<img width="1162" height="600" alt="BachelorsInst1" src="https://github.com/user-attachments/assets/e719ec3d-826a-4a53-9884-dfc0d10b8141" />
+
+
+
+
 
 ---
 
@@ -128,7 +231,7 @@ npm start
 * 📈 Analytics dashboard (study insights)
 * 👥 Multi-user support
 * ☁️ Cloud sync
-* 🎯 AI-based study recommendations
+* 🎯 AI-based schedule adjustments recommendations
 
 
 
