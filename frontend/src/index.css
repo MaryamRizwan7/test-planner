@@ -1,0 +1,158 @@
+/* Set background image on the body */
+body {
+  background-image: url("./assets/bg.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center;
+  min-height: 100vh;
+}
+
+.main-heading {
+  font-family: 'Packy Great', sans-serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #f0e6ff;
+  margin-bottom: 25px;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+  text-align: center;               
+}
+
+.common-style {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  color: #f0e6ff;
+}
+
+.custom-bg {
+  background-color:rgb(44, 44, 44);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+  border: 1px solid #666;
+}
+
+.custom-error-bar {
+  background: rgba(236, 86, 86, 0.2); /* translucent red */
+  color: #ff4d4d;                     /* neon-ish red text */
+  font-weight: bold;
+  border-radius: 10px;
+  padding: 12px;
+  backdrop-filter: blur(8px);         /* frosted glass effect */
+  border: 1px solid rgba(255, 77, 77, 0.4);
+  box-shadow: 0 0 8px rgba(255, 77, 77, 0.6); /* subtle neon glow */
+}
+
+
+/* Pastel card styling */
+.frosted-neon-card {
+  background: rgba(255, 255, 255, 0.08); /* frosted glass look */
+  border-radius: 16px;
+  backdrop-filter: blur(10px);           /* glass blur */
+  -webkit-backdrop-filter: blur(10px);   /* Safari support */
+
+  border: 1px solid rgba(156, 22, 138, 0.6); /* neon border */
+  box-shadow: 0 0 12px rgba(94, 5, 86, 0.6); /* neon glow */
+
+  color: #f1f1f1; /* readable on dark */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.frosted-neon-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 20px rgba(156, 22, 138, 0.6); /* stronger glow on hover */
+}
+
+/* Neon buttons */
+.neon-btn {
+  background: linear-gradient(45deg, #ff00ff, #9900ff);
+  border: none;
+  color: #fff;
+  font-weight: bold;
+  font-family: 'Poppins', sans-serif;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+.neon-btn:hover {
+  box-shadow: 0 0 15px #ff00ff, 0 0 30px #9900ff;
+  transform: scale(1.01);
+}
+
+/* Outline neon button */
+.neon-outline-btn {
+  background: transparent;
+  border: 2px solid #ff00ff;
+  color: #ff00ff;
+  font-weight: bold;
+  font-family: 'Poppins', sans-serif;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+.neon-outline-btn:hover {
+  background: rgba(255,0,255,0.05);
+  box-shadow: 0 0 15px #ff00ff;
+  transform: scale(1.03);
+}
+
+/* Square day buttons */
+.day-square-btn {
+  background: transparent;
+  border: 2px solid #666;
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  margin: 3px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+.day-square-btn:hover {
+  border-color: #ff00ff;
+  box-shadow: 0 0 10px #ff00ff;
+}
+.day-square-btn.active {
+  background: #ff00ff;
+  color: #fff;
+  box-shadow: 0 0 12px #ff00ff;
+}
+
+/* Input fields neon focus */
+input.form-control {
+  background: rgba(255,255,255,0.9);
+  border-radius: 8px;
+  border: 1px solid #666;
+  transition: all 0.3s ease;
+}
+input.form-control:focus {
+  border-color: #ff00ff;
+  box-shadow: 0 0 10px #ff00ff;
+}
+
+.dark-card {
+  background-color: rgba(255, 255, 255, 0.08); /* dark gray */
+  color: #f0e6ff; /* light text */
+  border: 2px solid #333; /* optional border */
+}
+
+/* Dark table styling */
+.schedule-table {
+  background-color: rgba(44, 44, 44, 0.8) !important;
+  color: #f0e6ff !important;
+  border-color: #666 !important;
+}
+
+.schedule-table th {
+  background-color: #941e70 !important;
+  color: #f0e6ff !important;
+  border-color: #666 !important;
+}
+
+.schedule-table td {
+  background-color: rgba(44, 44, 44, 0.6) !important;
+  color: #f0e6ff !important;
+  border-color: #666 !important;
+}
+
+.schedule-table tr:hover td {
+  background-color: rgba(187, 103, 180, 0.4) !important;
+}

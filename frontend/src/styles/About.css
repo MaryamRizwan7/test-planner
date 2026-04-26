@@ -1,0 +1,143 @@
+@import url('https://fonts.googleapis.com/css2?family=Packy+Great&family=Inter&display=swap');
+
+.about-page {
+  background: url('../assets/bg.jpg') no-repeat center top; /* use top instead of center center */
+  background-size: cover;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  padding: 120px 20px 40px 20px; /* top padding for navbar + spacing */
+  box-sizing: border-box;
+  overflow-x: hidden; /* prevent horizontal scroll */
+}
+
+.about-container {
+  background-color: rgb(44, 44, 44);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+  border: 1px solid #666;
+  max-width: 800px; /* limit width for readability */
+  margin: 0 auto;   /* center horizontally */
+}
+
+/* Headings and Text */
+.about-container h1.about-title {
+  font-family: 'Packy Great', sans-serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #f0e6ff;
+  margin-bottom: 25px;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+  text-align: center;
+}
+
+.about-container h2.about-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #d1b3ff;
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+
+.about-container p.about-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.15rem;
+  color: #e0e0e0;
+  line-height: 1.6;
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+/* Navbar -- CORRECTED */
+.custom-navbar {
+  position: fixed; /* Makes the navbar stick to the top */
+  top: 0;          /* Aligns it to the very top of the viewport */
+  left: 0;         /* Aligns it to the very left of the viewport */
+  width: 100%;     /* Ensures it spans the full width */
+  z-index: 1000;   /* Keeps it on top of other content */
+  
+  /* Your existing styles */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: linear-gradient(to right, #8e2de2, #ff00cc);
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Logo */
+.logo-link {
+  text-decoration: none;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
+  font-size: 1.7rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  fill: white;
+}
+
+.logo-text {
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  font-family: 'Poppins', sans-serif; 
+  font-weight: 600;
+}
+
+/* Nav links */
+.nav-links {
+  display: flex;
+  gap: 30px;
+}
+
+.nav-item {
+  color: #fff;
+  font-size: 1.2rem;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease-in-out;
+}
+
+.nav-item:hover {
+  color: #ffd700;
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .about-container {
+    padding: 30px 20px;
+  }
+
+  .about-container h1.about-title {
+    font-size: 2.2rem;
+  }
+
+  .about-container h2.about-subtitle {
+    font-size: 1.5rem;
+  }
+
+  .about-container p.about-text {
+    font-size: 1rem;
+  }
+
+  .nav-links {
+    gap: 15px;
+  }
+
+  .nav-item {
+    font-size: 1rem;
+  }
+}
