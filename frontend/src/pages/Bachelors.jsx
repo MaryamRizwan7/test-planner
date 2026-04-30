@@ -177,11 +177,11 @@ function Bachelors() {
       if (data.status === "success") {
         setErrorMessage("");
         // Pass both schedule and venue plan to the preview page
-        navigate("/preview", { 
-          state: { 
+        navigate("/preview", {
+          state: {
             schedule: data.schedule,
             venuePlan: data.venuePlan
-          } 
+          }
         });
       } else {
         setErrorMessage(
@@ -197,7 +197,7 @@ function Bachelors() {
   return (
     <div className="container my-5 p-4 rounded custom-bg">
       <h1 className="text-center mb main-heading"> BACHELOR'S TEST PLANNER </h1>
-      
+
       {/* Error Bar */}
       {errorMessage && (
         <div className="alert alert-danger text-center mb-4 custom-error-bar">
@@ -206,7 +206,7 @@ function Bachelors() {
           ))}
         </div>
       )}
-      
+
       {/* Top Card */}
       <div className="card frosted-neon-card mb-4 p-4">
         <div className="row text-center">
@@ -223,7 +223,7 @@ function Bachelors() {
               hideLabel
             />
           </div>
-          
+
           {/* Invigilators */}
           <div className="col-md-4 mb-3">
             <div className="d-flex align-items-center justify-content-center mb-3">
@@ -237,7 +237,7 @@ function Bachelors() {
               hideLabel
             />
           </div>
-          
+
           {/* Students */}
           <div className="col-md-4 mb-3">
             <div className="d-flex align-items-center justify-content-center mb-3">
@@ -254,7 +254,7 @@ function Bachelors() {
           </div>
         </div>
       </div>
-      
+
       <div className="row mb-4">
         {/* Days + Dates Card */}
         <div className="col-md-6">
@@ -272,7 +272,7 @@ function Bachelors() {
                 </button>
               ))}
             </div>
-            
+
             {dayDates.length > 0 && (
               <>
                 <h6 className="fw-bold">Enter Dates</h6>
@@ -296,7 +296,7 @@ function Bachelors() {
             )}
           </div>
         </div>
-        
+
         {/* Shifts + Timings Card */}
         <div className="col-md-6">
           <div className="card frosted-neon-card p-4 h-100">
@@ -309,7 +309,7 @@ function Bachelors() {
               min="1"
               max="5"
             />
-            
+
             {shiftTimes.length > 0 && (
               <>
                 <h6 className="fw-bold">Enter Shift Timings</h6>
@@ -344,7 +344,7 @@ function Bachelors() {
           </div>
         </div>
       </div>
-      
+
       {/* Generate + Reset Buttons */}
       <div className="d-grid gap-2 mb-4">
         <button className="btn neon-btn btn-lg" onClick={handleGenerate}>
