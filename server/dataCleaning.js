@@ -74,6 +74,51 @@ function cleanData(rows, requiredColumns, filename) {
   return cleanedRows;
 }
 
+const { mapColumnsWithAI } = require('./aiService');
+
+async function cleanDataWithAI(rows, requiredColumns, filename) {
+  try {
+    return cleanData(rows, requiredColumns, filename);
+  } catch (error) {
+    if (error.message.includes("Missing required columns")) {
+      console.log(`[AI] Missing columns detected in ${filename}. Attempting AI schema mapping...`);
+      if (!rows || rows.length === 0) throw error;
+      
+      const rawHeaders = Object.keys(rows[0]);
+      const mapping = await mapColumnsWithAI(rawHeaders, requiredColumns, filename);
+      
+      if (!mapping || Object.keys(mapping).length === 0) {
+        throw error;
+      }
+      
+      console.log(`[AI] Received mapping:`, mapping);
+      
+      const remappedRows = rows.map(row => {
+        const newRow = {};
+        for (const key in row) {
+          const mappedKey = mapping[key];
+          if (mappedKey && requiredColumns.includes(mappedKey)) {
+            newRow[mappedKey] = row[key];
+          } else {
+            newRow[key] = row[key];
+          }
+        }
+        return newRow;
+      });
+      
+      try {
+        const finalCleaned = cleanData(remappedRows, requiredColumns, filename);
+        console.log(`[AI] Successfully cleaned data for ${filename} using AI remapping.`);
+        return finalCleaned;
+      } catch (innerError) {
+        throw new Error(`${error.message} (AI attempted to map headers ${JSON.stringify(rawHeaders)} but failed. Mapping provided by AI: ${JSON.stringify(mapping)})`);
+      }
+    }
+    throw error;
+  }
+}
+
 module.exports = {
-  cleanData
+  cleanData,
+  cleanDataWithAI
 };

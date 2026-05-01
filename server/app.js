@@ -4,10 +4,16 @@ const cors = require('cors');
 const multer = require('multer');
 const xlsx = require('xlsx');
 
-const { cleanData } = require('./dataCleaning');
+const { cleanData, cleanDataWithAI } = require('./dataCleaning');
 const logicBachelor = require('./logicBachelor');
 const logicMasters = require('./logicMasters');
 const { generateVenuePlan, generateVenuePlanPreview } = require('./venueplan');
+const { 
+  detectScheduleAnomalies, 
+  parseNaturalLanguageInput,
+  suggestScheduleImprovements,
+  generateVenuePlanNarrative
+} = require('./aiService');
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -35,7 +41,7 @@ app.post('/planner/run/', upload.fields([
   { name: 'Blocks', maxCount: 1 },
   { name: 'Invigilators', maxCount: 1 },
   { name: 'Students', maxCount: 1 }
-]), (req, res) => {
+]), async (req, res) => {
   try {
     const program = req.body.Program;
     const numStudents = parseInt(req.body.Number_Of_Students, 10) || 0;
@@ -69,8 +75,8 @@ app.post('/planner/run/', upload.fields([
     const rawBlocks = parseFile(blocksFile);
     const rawInvigilators = parseFile(invigilatorsFile);
 
-    const cleanedBlocks = cleanData(rawBlocks, ['DEPARTMENT', 'BLOCK', 'PCS', 'DEPARTMENT_INCHARGE'], blocksFile.originalname);
-    const cleanedInvigilators = cleanData(rawInvigilators, ['NAME', 'EXTENSION'], invigilatorsFile.originalname);
+    const cleanedBlocks = await cleanDataWithAI(rawBlocks, ['DEPARTMENT', 'BLOCK', 'PCS', 'DEPARTMENT_INCHARGE'], blocksFile.originalname);
+    const cleanedInvigilators = await cleanDataWithAI(rawInvigilators, ['NAME', 'EXTENSION'], invigilatorsFile.originalname);
 
     let schedule = [];
     if (program === 'bachelor') {
@@ -78,7 +84,7 @@ app.post('/planner/run/', upload.fields([
       schedule = logicBachelor.generateSchedule(cleanedBlocks, numStudents, cleanedInvigilators, dayDates, shiftTimes);
     } else if (program === 'master') {
       const rawStudents = parseFile(studentsFile);
-      const cleanedStudents = cleanData(rawStudents, ['DEPARTMENT', 'STUDENTS_FOR_EVENING', 'STUDENTS_FOR_WEEKEND', 'SHORT_FORM'], studentsFile.originalname);
+      const cleanedStudents = await cleanDataWithAI(rawStudents, ['DEPARTMENT', 'STUDENTS_FOR_EVENING', 'STUDENTS_FOR_WEEKEND', 'SHORT_FORM'], studentsFile.originalname);
       logicMasters.validateCapacityPerDepartment(cleanedBlocks, cleanedStudents, days, numShifts);
       schedule = logicMasters.generateSchedule(cleanedBlocks, cleanedInvigilators, cleanedStudents, dayDates, shiftTimes);
     } else {
@@ -87,10 +93,24 @@ app.post('/planner/run/', upload.fields([
 
     const venuePlanPreview = generateVenuePlanPreview(schedule, program);
 
+    // Run AI post-processing in parallel (non-blocking — failures don't stop response)
+    let aiAnalysis = { anomalies: null, suggestions: [], narrative: null };
+    try {
+      const [anomalies, suggestions] = await Promise.all([
+        detectScheduleAnomalies(schedule, cleanedBlocks, numStudents),
+        suggestScheduleImprovements(schedule, cleanedBlocks, cleanedInvigilators)
+      ]);
+      aiAnalysis.anomalies = anomalies;
+      aiAnalysis.suggestions = suggestions;
+    } catch (e) {
+      console.error("AI post-processing failed (non-fatal):", e.message);
+    }
+
     res.json({
       status: "success",
       schedule: schedule,
-      venuePlan: venuePlanPreview
+      venuePlan: venuePlanPreview,
+      aiAnalysis: aiAnalysis
     });
 
   } catch (error) {
@@ -101,6 +121,26 @@ app.post('/planner/run/', upload.fields([
 
 app.get('/planner/get_csrf_token/', (req, res) => {
   res.json({ csrfToken: "not-needed-in-node" });
+});
+
+app.post('/planner/parse_natural_language/', async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      return res.json({ status: "error", message: "Text input is required" });
+    }
+    const parsed = await parseNaturalLanguageInput(text.trim());
+    if (!parsed) {
+      return res.json({ 
+        status: "error", 
+        message: "Could not extract scheduling parameters from input" 
+      });
+    }
+    res.json({ status: "success", parsed });
+  } catch (error) {
+    console.error(error);
+    res.json({ status: "error", message: error.message });
+  }
 });
 
 app.post('/planner/preview_venue_plan/', (req, res) => {
@@ -125,7 +165,14 @@ app.post('/planner/download_venue_plan/', async (req, res) => {
     
     if (!schedule) throw new Error("Schedule data is required");
     
-    const docBuffer = await generateVenuePlan(schedule, program, semester, year);
+    let narrativeText = null;
+    try {
+      narrativeText = await generateVenuePlanNarrative(schedule, program, semester, year);
+    } catch(e) {
+      console.error("AI narrative generation failed (non-fatal):", e.message);
+    }
+    
+    const docBuffer = await generateVenuePlan(schedule, program, semester, year, narrativeText);
     
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
     res.setHeader('Content-Disposition', 'attachment; filename="venue_plan.docx"');

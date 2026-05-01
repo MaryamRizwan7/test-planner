@@ -108,7 +108,7 @@ function setTableCellOptions(text, isHeader = false) {
   });
 }
 
-async function generateVenuePlan(scheduleRows, program = "master", semester = "Fall", year = 2025) {
+async function generateVenuePlan(scheduleRows, program = "master", semester = "Fall", year = 2025, aiNarrative = null) {
   const BLUE_COLOR = "0000FF";
   const RED_COLOR = "FF0000";
   const DARK_BLUE_COLOR = "00008B";
@@ -160,18 +160,21 @@ async function generateVenuePlan(scheduleRows, program = "master", semester = "F
         children: [
           setTableCellOptions("Date", true),
           setTableCellOptions("Time", true),
-          setTableCellOptions("Roll No", true)
+          setTableCellOptions("Roll No", true),
+          setTableCellOptions("Invigilator", true)
         ]
       })
     ];
 
     for (const r of sortedRows) {
       const rollCol = r['roll no'] || r['roll_no'] || r['roll'] || "";
+      const invig = r.invigilator || "N/A";
       tableRows.push(new TableRow({
         children: [
           setTableCellOptions(formatTableDate(r.day_object)),
           setTableCellOptions(r.time || ""),
-          setTableCellOptions(rollCol)
+          setTableCellOptions(rollCol),
+          setTableCellOptions(invig)
         ]
       }));
     }
@@ -230,6 +233,25 @@ async function generateVenuePlan(scheduleRows, program = "master", semester = "F
         table
       ]
     });
+    
+    // If AI generated a narrative, add it as a styled paragraph after the table
+    const additionalParagraphs = [];
+    if (aiNarrative && typeof aiNarrative === 'string') {
+      additionalParagraphs.push(new Paragraph(""));
+      additionalParagraphs.push(new Paragraph({
+        children: [new TextRun({ 
+          text: aiNarrative, 
+          font: "Calibri (Body)", 
+          size: 22,
+          italics: true,
+          color: "444444"
+        })],
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 200, after: 200 }
+      }));
+    }
+    
+    sections[sections.length - 1].children.push(...additionalParagraphs);
   }
 
   const doc = new Document({ sections });
@@ -272,16 +294,17 @@ function generateVenuePlanPreview(scheduleRows, program = "master") {
     const blockLines = [
       `--- VENUE: Block ${blockName} (${formattedDepartmentName}) ---`,
       `Incharge: ${incharge}`,
-      "-".repeat(50),
-      `${'Date'.padEnd(20)} | ${'Time'.padEnd(15)} | ${'Roll No'.padEnd(10)}`,
-      "-".repeat(50)
+      "-".repeat(80),
+      `${'Date'.padEnd(20)} | ${'Time'.padEnd(22)} | ${'Roll No'.padEnd(10)} | ${'Invigilator'.padEnd(20)}`,
+      "-".repeat(80)
     ];
 
     for (const r of sortedRows) {
       const dateStr = formatTableDate(r.day_object);
       const timeStr = r.time || "";
       const rollCol = r['roll no'] || r['roll_no'] || r['roll'] || "";
-      blockLines.push(`${dateStr.padEnd(20)} | ${timeStr.padEnd(15)} | ${rollCol.padEnd(10)}`);
+      const invig = r.invigilator || "N/A";
+      blockLines.push(`${dateStr.padEnd(20)} | ${timeStr.padEnd(22)} | ${rollCol.padEnd(10)} | ${invig.padEnd(20)}`);
     }
 
     previewBlocks.push(blockLines.join("\n"));
