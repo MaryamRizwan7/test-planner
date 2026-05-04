@@ -14,6 +14,8 @@ function PreviewPage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(!venuePlan);
   const [csrfToken, setCsrfToken] = useState("");
+  const [summary, setSummary] = useState("");
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
 
   // Get CSRF token on component mount
   useEffect(() => {
@@ -92,6 +94,31 @@ function PreviewPage() {
     );
   }
 
+  const generateSummary = async () => {
+    setIsSummaryLoading(true);
+    setSummary("");
+    try {
+      const prog = location.state?.program || "bachelor";
+      const response = await fetch("http://127.0.0.1:8000/planner/generate_summary/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ schedule, program: prog }),
+      });
+      const data = await response.json();
+      if (data.status === "success") {
+        setSummary(data.summary);
+      } else {
+        setError(data.message || "Failed to generate summary");
+      }
+    } catch (err) {
+      setError(`Error generating summary: ${err.message}`);
+    } finally {
+      setIsSummaryLoading(false);
+    }
+  };
+
   // --- Download Schedule as Excel ---
   const downloadScheduleExcel = () => {
     try {
@@ -164,6 +191,21 @@ function PreviewPage() {
           <button className="btn neon-btn btn-lg" onClick={downloadScheduleExcel}>
             Download Schedule (.xlsx)
           </button>
+        </div>
+        <div className="text-center mt-3">
+          <button 
+            className="btn neon-btn btn-lg" 
+            onClick={generateSummary} 
+            disabled={isSummaryLoading}
+          >
+            {isSummaryLoading ? "Generating Summary..." : "Generate Summary"}
+          </button>
+          {summary && (
+            <div className="mt-4 p-3 card dark-card shadow-sm text-start">
+              <h5>Schedule Summary</h5>
+              <p style={{ whiteSpace: "pre-wrap" }}>{summary}</p>
+            </div>
+          )}
         </div>
       </section>
       

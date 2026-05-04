@@ -42,16 +42,40 @@ function generateSchedule(blocks, invigilators, students, dayDates, shiftTimes) 
   const scheduleRows = [];
   const rollCounters = {};
   const remainingStudents = {};
+  
+  const numDays = dayDates.length;
+  const numShiftsPerDay = shiftTimes.length;
+  const numESlots = numDays * (Math.floor(numShiftsPerDay / 2) + (numShiftsPerDay % 2));
+  const numWSlots = numDays * Math.floor(numShiftsPerDay / 2);
+
+  const slotTargets = {};
 
   for (const row of students) {
     const dept = row.DEPARTMENT;
-    remainingStudents[`${dept}_E`] = parseInt(row.STUDENTS_FOR_EVENING, 10) || 0;
-    remainingStudents[`${dept}_W`] = parseInt(row.STUDENTS_FOR_WEEKEND, 10) || 0;
+    const eStudents = parseInt(row.STUDENTS_FOR_EVENING, 10) || 0;
+    const wStudents = parseInt(row.STUDENTS_FOR_WEEKEND, 10) || 0;
+
+    remainingStudents[`${dept}_E`] = eStudents;
+    remainingStudents[`${dept}_W`] = wStudents;
     rollCounters[`${dept}_E`] = 1;
     rollCounters[`${dept}_W`] = 1;
+
+    const baseE = numESlots > 0 ? Math.floor(eStudents / numESlots) : 0;
+    const remE = numESlots > 0 ? eStudents % numESlots : 0;
+    const eTargets = [];
+    for (let i = 0; i < numESlots; i++) eTargets.push(baseE + (i < remE ? 1 : 0));
+
+    const baseW = numWSlots > 0 ? Math.floor(wStudents / numWSlots) : 0;
+    const remW = numWSlots > 0 ? wStudents % numWSlots : 0;
+    const wTargets = [];
+    for (let i = 0; i < numWSlots; i++) wTargets.push(baseW + (i < remW ? 1 : 0));
+
+    slotTargets[`${dept}_E`] = eTargets;
+    slotTargets[`${dept}_W`] = wTargets;
   }
 
   const invigilatorPool = invigilators.filter(i => i.NAME).map(i => i.NAME);
+  const currentSlotIndex = { E: 0, W: 0 };
 
   for (const day of dayDates) {
     for (let sIdx = 0; sIdx < shiftTimes.length; sIdx++) {
@@ -68,18 +92,23 @@ function generateSchedule(blocks, invigilators, students, dayDates, shiftTimes) 
         const dept = studentRow.DEPARTMENT;
         const key = `${dept}_${session}`;
 
-        if (remainingStudents[key] <= 0) continue;
+        const targetStudents = slotTargets[key][currentSlotIndex[session]] || 0;
+        if (targetStudents <= 0) continue;
 
         const deptBlocks = blocks
           .filter(b => b.DEPARTMENT === dept)
           .sort((a, b) => (parseInt(b.PCS, 10) || 0) - (parseInt(a.PCS, 10) || 0));
 
+        let assignedHere = 0;
+
         for (const bRow of deptBlocks) {
-          if (remainingStudents[key] <= 0) break;
+          if (assignedHere >= targetStudents || remainingStudents[key] <= 0) break;
           if (availableInvigs.length === 0) break;
 
           const blockCap = parseInt(bRow.PCS, 10) || 0;
-          const assigned = Math.min(blockCap, remainingStudents[key]);
+          const remainingGlobal = remainingStudents[key];
+          const remainingSlot = targetStudents - assignedHere;
+          const assigned = Math.min(blockCap, remainingGlobal, remainingSlot);
           
           if (assigned <= 0) continue;
 
@@ -103,8 +132,11 @@ function generateSchedule(blocks, invigilators, students, dayDates, shiftTimes) 
 
           rollCounters[key] += assigned;
           remainingStudents[key] -= assigned;
+          assignedHere += assigned;
         }
       }
+
+      currentSlotIndex[session]++;
     }
   }
 

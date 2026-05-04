@@ -1,9 +1,10 @@
+const { spawn } = require("child_process");
+const path = require("path");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const apiKey = process.env.GEMINI_API_KEY || "";
 const genAI = new GoogleGenerativeAI(apiKey);
-const modelName = "gemini-1.5-flash";
-
+const modelName = "gemini-1.5-flash-8b";
 function cleanJsonResponse(text) {
   if (!text) return "";
   return text.replace(/```json|```/gi, '').trim();
@@ -99,7 +100,6 @@ async function detectScheduleAnomalies(scheduleRows, blocks, totalStudents) {
 
       const rollMatch = row["Roll No"] ? row["Roll No"].match(/\d+/g) : null;
       if (rollMatch && rollMatch.length >= 2) {
-        // Simple extraction just for summary
         assigned = parseInt(rollMatch[rollMatch.length - 1], 10) - parseInt(rollMatch[0], 10) + 1;
       } else {
         assigned = parseInt(capacityStr, 10) || 0;
@@ -123,7 +123,6 @@ async function detectScheduleAnomalies(scheduleRows, blocks, totalStudents) {
       statsSummary.studentDistribution[shiftKey] += assigned;
     }
 
-    // Convert capacityUtilization to percentage
     for (const v in statsSummary.capacityUtilization) {
       const data = statsSummary.capacityUtilization[v];
       if (data.capacity > 0) {
@@ -263,10 +262,57 @@ Respond with ONLY the raw JSON array, no markdown, no backticks.`;
   }
 }
 
+// NLP Extractive Summarization via Python/NLTK (no Gemini API call)
+async function generateScheduleSummary(scheduleRows, program) {
+  return new Promise((resolve) => {
+    try {
+      console.log("[NLP] Starting generateScheduleSummary via Python/NLTK...");
+      if (!scheduleRows || scheduleRows.length === 0) {
+        return resolve("No schedule data available.");
+      }
+
+      const scriptPath = path.join(__dirname, "..", "summarizer.py");
+      const pythonProcess = spawn("python", [scriptPath]);
+
+      const dataChunks = [];
+      const errorChunks = [];
+
+      pythonProcess.stdout.on("data", (chunk) => dataChunks.push(chunk));
+      pythonProcess.stderr.on("data", (chunk) => errorChunks.push(chunk));
+
+      pythonProcess.stdin.write(
+        JSON.stringify({ schedule: scheduleRows, program: program || "bachelor" })
+      );
+      pythonProcess.stdin.end();
+
+      pythonProcess.on("close", (code) => {
+        const output = Buffer.concat(dataChunks).toString().trim();
+        if (code !== 0 || !output) {
+          const errMsg = Buffer.concat(errorChunks).toString().trim();
+          console.error("[NLP] Python summarizer error:", errMsg);
+          return resolve("Summary unavailable.");
+        }
+        console.log("[NLP] Successfully generated NLP summary.");
+        resolve(output);
+      });
+
+      pythonProcess.on("error", (err) => {
+        console.error("[NLP] Failed to spawn Python process:", err.message);
+        resolve("Summary unavailable.");
+      });
+
+    } catch (e) {
+      console.error("[NLP] Error in generateScheduleSummary:", e.message);
+      resolve("Summary unavailable.");
+    }
+  });
+}
+
 module.exports = {
   mapColumnsWithAI,
   parseNaturalLanguageInput,
   detectScheduleAnomalies,
   generateVenuePlanNarrative,
-  suggestScheduleImprovements
+  suggestScheduleImprovements,
+  generateScheduleSummary
 };

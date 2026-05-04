@@ -89,9 +89,9 @@ function Masters() {
       formData.append("Invigilators", uploadedFiles.invigilators);
       formData.append("Students", uploadedFiles.students);
       formData.append("Days", filters.days);
-      formData.append("Day Dates", JSON.stringify(formattedDates));
-      formData.append("Number Of Shifts", filters.shifts);
-      formData.append("Shift Times", JSON.stringify(formattedShifts));
+      formData.append("Day_Dates", JSON.stringify(formattedDates));
+      formData.append("Number_Of_Shifts", filters.shifts);
+      formData.append("Shift_Times", JSON.stringify(formattedShifts));
 
       const response = await fetch("/planner/run/", { method: "POST", body: formData });
       const data = await response.json();

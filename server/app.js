@@ -12,7 +12,8 @@ const {
   detectScheduleAnomalies, 
   parseNaturalLanguageInput,
   suggestScheduleImprovements,
-  generateVenuePlanNarrative
+  generateVenuePlanNarrative,
+  generateScheduleSummary
 } = require('./aiService');
 
 const app = express();
@@ -150,6 +151,20 @@ app.post('/planner/preview_venue_plan/', (req, res) => {
     if (!schedule) throw new Error("Schedule data is required");
     const preview = generateVenuePlanPreview(schedule, program);
     res.json({ status: "success", preview });
+  } catch (error) {
+    console.error(error);
+    res.json({ status: "error", message: error.message });
+  }
+});
+
+app.post('/planner/generate_summary/', async (req, res) => {
+  try {
+    const { schedule, program } = req.body;
+    if (!schedule || !Array.isArray(schedule) || schedule.length === 0) {
+      return res.json({ status: "error", message: "Schedule data must be a non-empty array" });
+    }
+    const summary = await generateScheduleSummary(schedule, program);
+    res.json({ status: "success", summary });
   } catch (error) {
     console.error(error);
     res.json({ status: "error", message: error.message });
